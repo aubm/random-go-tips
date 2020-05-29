@@ -10,4 +10,5 @@ var concurrencyCmd = &cobra.Command{
 func init() {
 	concurrencyCmd.AddCommand(concurrencySequenceCmd)
 	concurrencyCmd.AddCommand(concurrencyUnboundCmd)
+	concurrencyCmd.AddCommand(concurrencyPoolCmd)
 }

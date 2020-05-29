@@ -1,0 +1,126 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: concurrency-sequence
+  name: concurrency-sequence
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: concurrency-sequence
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: concurrency-sequence
+  name: concurrency-sequence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concurrency-sequence
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: concurrency-sequence
+    spec:
+      containers:
+        - image: aubm/random-go-tips:latest
+          name: random-go-tips
+          args:
+            - concurrency
+            - sequence
+          resources:
+            limits:
+              memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: concurrency-unbound
+  name: concurrency-unbound
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: concurrency-unbound
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: concurrency-unbound
+  name: concurrency-unbound
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concurrency-unbound
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: concurrency-unbound
+    spec:
+      containers:
+        - image: aubm/random-go-tips:latest
+          name: random-go-tips
+          args:
+            - concurrency
+            - unbound
+          resources:
+            limits:
+              memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: concurrency-pool
+  name: concurrency-pool
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: concurrency-pool
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: concurrency-pool
+  name: concurrency-pool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concurrency-pool
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: concurrency-pool
+    spec:
+      containers:
+        - image: aubm/random-go-tips:latest
+          name: random-go-tips
+          args:
+            - concurrency
+            - pool
+          resources:
+            limits:
+              memory: 200Mi

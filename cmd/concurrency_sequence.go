@@ -7,7 +7,7 @@ import (
 
 var concurrencySequenceCmd = &cobra.Command{
 	Use:   "sequence --addr :8080",
-	Short: "A web app that compute fibonacci numbers in sequence",
+	Short: "A web app that downloads and resizes images in sequence",
 	Run: func(cmd *cobra.Command, args []string) {
 		sequence.Run(globalConfig)
 	},

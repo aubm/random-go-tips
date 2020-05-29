@@ -1,4 +1,4 @@
-package unbound
+package pool
 
 import (
 	"encoding/json"
@@ -22,17 +22,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(len(imagesUrl))
+	nbJobs := len(imagesUrl)
+	jobs := make(chan string, nbJobs)
 
-	for _, imageUrl := range imagesUrl {
-		go func(imageUrl string) {
-			defer wg.Done()
-			if _, err := img.ResizeFromUrl(imageUrl, 100, 0); err != nil {
-				log.Printf("failed to resize image, url: %v, err: %v", imageUrl, err)
-			}
-		}(imageUrl)
+	wg := sync.WaitGroup{}
+	wg.Add(nbJobs)
+
+	for w := 1; w <= 3; w++ {
+		go resizeImagesWorker(jobs, &wg)
 	}
 
+	for _, imageUrl := range imagesUrl {
+		jobs <- imageUrl
+	}
+	close(jobs)
+
 	wg.Wait()
+}
+
+func resizeImagesWorker(imagesUrl chan string, wg *sync.WaitGroup) {
+	for imageUrl := range imagesUrl {
+		if _, err := img.ResizeFromUrl(imageUrl, 100, 0); err != nil {
+			log.Printf("failed to resize image, url: %v, err: %v", imageUrl, err)
+		}
+		wg.Done()
+	}
 }

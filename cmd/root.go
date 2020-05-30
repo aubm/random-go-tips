@@ -26,4 +26,5 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&globalConfig.WebAppAddr, "addr", "", globalConfig.WebAppAddr, "addr to bind for web apps")
 
 	rootCmd.AddCommand(concurrencyCmd)
+	rootCmd.AddCommand(cancellationCmd)
 }

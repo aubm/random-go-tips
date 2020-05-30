@@ -124,3 +124,87 @@ spec:
           resources:
             limits:
               memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cancellation-unhandled
+  name: cancellation-unhandled
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: cancellation-unhandled
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cancellation-unhandled
+  name: cancellation-unhandled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cancellation-unhandled
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: cancellation-unhandled
+    spec:
+      containers:
+        - image: aubm/random-go-tips:latest
+          name: random-go-tips
+          args:
+            - cancellation
+            - unhandled
+          resources:
+            limits:
+              memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cancellation-handled
+  name: cancellation-handled
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: cancellation-handled
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cancellation-handled
+  name: cancellation-handled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cancellation-handled
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: cancellation-handled
+    spec:
+      containers:
+        - image: aubm/random-go-tips:latest
+          name: random-go-tips
+          args:
+            - cancellation
+            - unhandled
+          resources:
+            limits:
+              memory: 200Mi

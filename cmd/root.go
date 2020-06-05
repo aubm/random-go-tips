@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aubm/random-go-tips/pkg/config"
 	"github.com/spf13/cobra"
+
+	"github.com/aubm/random-go-tips/pkg/config"
 )
 
 var globalConfig = config.NewWithDefaults()
@@ -27,4 +28,5 @@ func init() {
 
 	rootCmd.AddCommand(concurrencyCmd)
 	rootCmd.AddCommand(cancellationCmd)
+	rootCmd.AddCommand(channelsCmd)
 }

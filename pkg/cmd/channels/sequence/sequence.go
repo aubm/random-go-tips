@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/nfnt/resize"
 	"github.com/opentracing/opentracing-go"
@@ -25,14 +26,6 @@ type Message struct {
 }
 
 func Run(config config.Config) {
-	urlChan := make(chan Message)
-	imageChan := make(chan Message)
-	resizedDataChan := make(chan Message)
-
-	go downloadImages(urlChan, imageChan)
-	go resizeImages(imageChan, resizedDataChan)
-	go readResizedImages(resizedDataChan)
-
 	cfg := jaegercfg.Configuration{
 		ServiceName: "imageResizer",
 		Sampler: &jaegercfg.SamplerConfig{
@@ -50,7 +43,18 @@ func Run(config config.Config) {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
+	urlChan := make(chan Message)
+	imageChan := make(chan Message)
+	resizedDataChan := make(chan Message)
+
+	go downloadImages(urlChan, imageChan)
+	go resizeImages(imageChan, resizedDataChan)
+	go readResizedImages(resizedDataChan)
+
 	webserver.Start(config.WebAppAddr, func(w http.ResponseWriter, r *http.Request) {
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "newImagesResizeRequest")
+		defer span.Finish()
+
 		var imagesUrl []string
 		if err := json.NewDecoder(r.Body).Decode(&imagesUrl); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -58,7 +62,7 @@ func Run(config config.Config) {
 		}
 
 		for _, imageUrl := range imagesUrl {
-			_, ctx := opentracing.StartSpanFromContext(r.Context(), "handleImage")
+			_, ctx = opentracing.StartSpanFromContext(ctx, "handleImage", opentracing.ChildOf(span.Context()))
 			urlChan <- Message{
 				Ctx:  ctx,
 				Data: []byte(imageUrl),
@@ -132,6 +136,8 @@ func readResizedImages(msgs chan Message) {
 
 			childSpan := span.Tracer().StartSpan("readResizedImages", opentracing.ChildOf(span.Context()))
 			defer childSpan.Finish()
+
+			time.Sleep(time.Second)
 
 			log.Print("read resized image data")
 		}(<-msgs)
